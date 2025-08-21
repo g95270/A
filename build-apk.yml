@@ -1,57 +1,31 @@
-name: 构建抖音推流助手 APK
+name: 生成APK
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: 检出代码
-      uses: actions/checkout@v3
-      
-    - name: 设置Java环境
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '11'
-        
-    - name: 设置Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        sdk-platform: '33'
-        sdk-build-tools: '33.0.0'
-        
-    - name: 授予执行权限
-      run: chmod +x ./gradlew
-      
-    - name: 构建Debug APK
-      run: ./gradlew assembleDebug
-      
-    - name: 构建Release APK
-      run: ./gradlew assembleRelease
-      
-    - name: 上传Debug APK
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
-        
-    - name: 上传Release APK
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-release
-        path: app/build/outputs/apk/release/app-release.apk
-        
-    - name: 构建完成通知
-      run: |
-        echo "🎉 APK构建完成！"
-        echo "📱 Debug版本：app-debug.apk"
-        echo "📱 Release版本：app-release.apk"
-        echo "⬇️  请在Actions页面下载APK文件"
+      - name:  checkout
+        uses: actions/checkout@v4
 
+      - name: 安装JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 最关键的一步：给打包脚本授权
+      - name: 授权Gradle
+        run: chmod +x ./gradlew
+
+      # 执行打包命令
+      - name: 打包APK (Debug)
+        run: ./gradlew assembleDebug
+
+      # 把打好的包上传，方便你下载
+      - name: 上传APK文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: 生成的APK
+          path: app/build/outputs/apk/debug/*.apk
